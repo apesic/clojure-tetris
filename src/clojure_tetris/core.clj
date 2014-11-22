@@ -80,11 +80,11 @@
           block-coords)
         (every?
           (fn [[x y]]
-            (zero? (get board (xy->position [x y]))))
+	    (and (>= x 0) (< x COLS)))
           block-coords)
         (every?
           (fn [[x y]]
-            (and (>= x 0) (< x COLS)))
+	    (zero? (get board (xy->position [x y]))))
           block-coords)))))
 
 (defn translate
