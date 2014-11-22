@@ -2,6 +2,28 @@
   (:require [lanterna.screen :as s])
   (:gen-class))
 
+;; Board setup
+(def COLS 10)
+(def ROWS 20)
+
+(defn position->xy [position]
+  (let [x (mod position COLS)
+	y (int (/ position COLS))]
+     [x y]))
+
+(defn xy->position [[x y]]
+  (+ x (* y COLS)))
+
+
+(defn blank-board []
+  (vec (take (* COLS ROWS) (repeat 0))))
+
+(defn merge-block
+  [board block-coords]
+  (if-let [[x y] (first block-coords)]
+    (recur (assoc board (xy->position [x y]) 1) (rest block-coords))
+    board))
+
 ;; BLOCKS
 (def square-block [[1 1]
                    [1 1]])
@@ -31,22 +53,12 @@
 (defn get-block []
   {:shape (rand-nth blocks), :xy [5 0]})
 
-(def COLS 10)
-(def ROWS 20)
 
 (defn map-matrix
   [f matrix]
   (vec (map-indexed  (fn [y row]
     (vec (map-indexed  (fn [x cell] (f cell x y)) row)))
       matrix)))
-
-(defn position->xy [position]
-  (let [x (mod position COLS)
-        y (int (/ position COLS))]
-     [x y]))
-
-(defn xy->position [[x y]]
-  (+ x (* y COLS)))
 
 (defn block-coords [block]
   "Return a list of coordinates for each filled cell of block, e.g. ((1 3) (2 3) (2 4) (2 5))"
@@ -90,16 +102,6 @@
     (if (collides? board rotated)
       block
       rotated)))
-
-;; BOARD
-(defn blank-board []
-  (vec (take (* COLS ROWS) (repeat 0))))
-
-(defn merge-block
-  [board block-coords]
-  (if-let [[x y] (first block-coords)]
-    (recur (assoc board (xy->position [x y]) 1) (rest block-coords))
-    board))
 
 (defn down-or-anchor
   [board block]
