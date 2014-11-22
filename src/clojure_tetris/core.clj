@@ -34,6 +34,26 @@
 
 (def blocks [square-block line-block z-block s-block t-block l-block])
 
+(defn get-block []
+  {:shape (rand-nth blocks), :xy [5 0]})
+
+;; TODO: implement actual collision detection
+(defn collides?
+  [board block]
+  false)
+
+(defn translate
+  [dx dy board block]
+  (let [translated (update-in block [:xy] #(vec (map + [dx dy] %)))]
+    (if (collides? board translated)
+      block
+      translated)))
+
+(defn rotate
+  [board block]
+  )
+
+
 ;; SCREEN
 (def screen-width (+ COLS 8))
 (def screen-height ROWS)
@@ -65,24 +85,61 @@
       (s/put-string screen x y value))))
 
 (defn draw-block ;;FIXME: So ugly, needs refactoring
-  ([screen block]
-   (draw-block screen block [5 0]))
-  ([screen block block-xy]
-    (let [[x y] block-xy]
-      (doseq [row (range (count block))]
-        (doseq [cell (range (count (get block row)))]
-          (let [value (get char-map (get (get block row) cell))]
-            (s/put-string screen (+ x cell) (+ y row) value)))))))
+  [screen block]
+  (let [[x y] (:xy block)
+	shape (:shape block)]
+    (doseq [row (range (count shape))]
+      (doseq [cell (range (count (get shape row)))]
+	(let [value (get char-map (get-in shape [row cell]))]
+	  (s/put-string screen (+ x cell) (+ y row) value))))))
 
+;; INPUT
+(defn key-mapping [input]
+  (cond
+    (= input :left)
+    (partial translate -1 0)
 
-;; Game Loop:
-;; 1. Draw the board
-;; 2. Get user input
-;; 3. Process input, create new board
-;; 4. Recur with new board
+    (= input :right)
+    (partial translate 1 0)
+
+    (= input :down)
+    (partial translate 0 1)
+
+    (= input :up)
+    rotate
+
+    :else nil))
 
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (s/start scr)
+
+  ;; Game Loop:
+  (loop [board (blank-board)
+	 block (get-block)
+	 score 0]
+
+    ;; 1. Draw the board
+    (clear-screen scr)
+    (draw-border scr)
+    (draw-score scr score)
+    (draw-board scr board)
+    (draw-block scr block)
+    (s/redraw scr)
+
+    ;; 2. Get user input
+
+    (if-let [action (key-mapping (s/get-key-blocking scr))]
+      (recur
+	board
+	(action board block)
+	score
+	)
+      (recur
+	board
+	block
+	score))
+    ;; 3. Process input, create new board
+    ;; 4. Recur with new board
+    ))
 
