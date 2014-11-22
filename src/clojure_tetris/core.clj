@@ -8,7 +8,7 @@
 
 (defn position->xy [position]
   (let [x (mod position COLS)
-	y (int (/ position COLS))]
+        y (int (/ position COLS))]
      [x y]))
 
 (defn xy->position [[x y]]
@@ -80,11 +80,11 @@
           block-coords)
         (every?
           (fn [[x y]]
-	    (and (>= x 0) (< x COLS)))
+            (and (>= x 0) (< x COLS)))
           block-coords)
         (every?
           (fn [[x y]]
-	    (zero? (get board (xy->position [x y]))))
+            (zero? (get board (xy->position [x y]))))
           block-coords)))))
 
 (defn translate
