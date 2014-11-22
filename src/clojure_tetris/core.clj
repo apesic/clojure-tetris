@@ -51,8 +51,10 @@
 
 (defn rotate
   [board block]
-  )
-
+  (let [rotated (update-in block [:shape] #(vec  (apply map vector (map reverse %))))]
+    (if (collides? board rotated)
+      block
+      rotated)))
 
 ;; SCREEN
 (def screen-width (+ COLS 8))
