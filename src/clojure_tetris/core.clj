@@ -38,7 +38,10 @@
 (def l-block [[1 0 0]
               [1 1 1]])
 
-(def blocks [square-block line-block z-block s-block t-block l-block])
+(def j-block [[1 1 1]
+	      [1 0 0]])
+
+(def blocks [square-block line-block z-block s-block t-block l-block j-block])
 
 (defn get-block []
   {:shape (rand-nth blocks), :xy [5 0]})
@@ -55,9 +58,10 @@
       block
       translated)))
 
+;;TODO: Refactor using comp
 (defn rotate
   [board block]
-  (let [rotated (update-in block [:shape] #(vec  (apply map vector (map reverse %))))]
+  (let [rotated (update-in block [:shape] #(vec (apply map vector (map reverse %))))]
     (if (collides? board rotated)
       block
       rotated)))
