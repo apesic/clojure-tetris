@@ -14,11 +14,17 @@
         y (int (/ position COLS))]
      [x y]))
 
+(defn xy->position [[x y]]
+  (+ x (* y COLS)))
+
 ;; BLOCKS
 (def square-block [[1 1]
                    [1 1]])
 
-(def line-block [1 1 1 1])
+(def line-block [[1]
+                 [1]
+                 [1]
+                 [1]])
 
 (def z-block [[1 1 0]
               [0 1 1]])
@@ -27,7 +33,7 @@
               [1 1 0]])
 
 (def t-block [[1 1 1]
-              [0 1 1]])
+              [0 1 0]])
 
 (def l-block [[1 0 0]
               [1 1 1]])
@@ -89,11 +95,11 @@
 (defn draw-block ;;FIXME: So ugly, needs refactoring
   [screen block]
   (let [[x y] (:xy block)
-	shape (:shape block)]
+        shape (:shape block)]
     (doseq [row (range (count shape))]
       (doseq [cell (range (count (get shape row)))]
-	(let [value (get char-map (get-in shape [row cell]))]
-	  (s/put-string screen (+ x cell) (+ y row) value))))))
+        (let [value (get char-map (get-in shape [row cell]))]
+          (s/put-string screen (+ x cell) (+ y row) value))))))
 
 ;; INPUT
 (defn key-mapping [input]
@@ -118,8 +124,8 @@
 
   ;; Game Loop:
   (loop [board (blank-board)
-	 block (get-block)
-	 score 0]
+         block (get-block)
+         score 0]
 
     ;; 1. Draw the board
     (clear-screen scr)
@@ -133,14 +139,14 @@
 
     (if-let [action (key-mapping (s/get-key-blocking scr))]
       (recur
-	board
-	(action board block)
-	score
-	)
+        board
+        (action board block)
+        score
+        )
       (recur
-	board
-	block
-	score))
+        board
+        block
+        score))
     ;; 3. Process input, create new board
     ;; 4. Recur with new board
     ))
