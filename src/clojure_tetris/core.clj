@@ -56,11 +56,7 @@
                        (vector (* cell (+ cell-x x)) (* cell (+ cell-y y)))) matrix)]
         (filter #(not= '(0 0) %1) (partition 2 (flatten coord-matrix)))))
 
-;; TODO: implement actual collision detection
-;; for each coord:
-;; not out of bounds (< 0, > COLS)
-;; not overlapping (board [x y] != 1)
-
+;; TODO: Refactor to use a single every?
 (defn collides?
   [board block]
   (let [block-coords (block-coords block)]
@@ -82,8 +78,6 @@
 (defn translate
   [dx dy board block]
   (let [translated (update-in block [:xy] #(vec (map + [dx dy] %)))]
-    (println board)
-    (println block)
     (if (collides? board translated)
       block
       translated)))
@@ -98,10 +92,8 @@
       rotated)))
 
 ;; BOARD
-
 (defn blank-board []
   (vec (take (* COLS ROWS) (repeat 0))))
-
 
 (defn merge-block
   [board block-coords]
@@ -115,8 +107,6 @@
     (if (= block test-block)
       [(merge-block board (block-coords block)) (get-block)]
       [board test-block])))
-
-
 
 ;; SCREEN
 (def screen-width (+ COLS 8))
@@ -148,7 +138,8 @@
           value (get char-map (get board cell))]
       (s/put-string screen x y value))))
 
-(defn draw-block ;;FIXME: So ugly, needs refactoring
+;; TODO: Refactor to take advantage of map-matrix function
+(defn draw-block
   [screen block]
   (let [[x y] (:xy block)
         shape (:shape block)]
@@ -172,10 +163,10 @@
     (= input :up)
     rotate
 
-    :else nil))
+    :else
+    nil))
 
 ;; TODO:
-;; - Collision detection
 ;; - Detect full lines
 ;; - Clear lines
 ;; - Game over?
