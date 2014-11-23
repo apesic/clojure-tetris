@@ -1,36 +1,24 @@
 # clojure_tetris
 
-FIXME: description
+A basic implementation of Tetris using Clojure. Text based graphics using the clojure-laterna library (http://sjl.bitbucket.org/clojure-lanterna/).
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Clone the repo:
+
+    git clone https://github.com/apesic/clojure-tetris.git
 
 ## Usage
 
-FIXME: explanation
+Run using Leiningen:
 
-    $ java -jar clojure_tetris-0.1.0-standalone.jar [args]
+    lein run
 
-## Options
+## Todo
 
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
-
-## License
-
-Copyright © 2014 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+ - Implement multi-threading
+ - Refactor!
+ - Score tracking
+ - Next block
+ - Wall kick
+ - Redo gui with OpenGL
