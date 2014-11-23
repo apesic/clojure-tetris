@@ -171,8 +171,8 @@
 (defn draw-game-over
   [screen score]
   (clear-screen screen)
-  (s/put-string screen 4 4 "GAME OVER")
-  (s/put-string screen 4 6 (str "SCORE: " score))
+  (s/put-string screen 5 4 "GAME OVER")
+  (s/put-string screen 5 6 (str "SCORE: " score))
   (s/redraw screen))
 
 (defn draw-all
@@ -204,7 +204,11 @@
 
 
 ;; TODO:
-;; - Increasing speed
+;; - Next block
+;; - Score tracking
+;; - Refactor!
+
+(def starting-tick-length 600)
 
 (defn -main
   [& args]
@@ -215,13 +219,14 @@
   (loop [board (blank-board)
          block (get-block)
          score 0
-         past-tick (System/currentTimeMillis)]
+         past-tick (System/currentTimeMillis)
+         tick-length starting-tick-length]
 
     (draw-all scr board block score)
 
     (let [user-action (key-mapping (s/get-key scr))
           current-tick (System/currentTimeMillis)
-          next-tick (if (> (- current-tick past-tick) 600)
+          next-tick (if (> (- current-tick past-tick) tick-length)
                       current-tick
                       past-tick)]
       (cond
@@ -232,22 +237,25 @@
            new-board
            new-block
            (+ new-score score)
-           next-tick))
+           next-tick
+           (- starting-tick-length (* 10 score))))
 
-	(game-over? board block)
-	(draw-game-over scr score)
+        (game-over? board block)
+        (draw-game-over scr score)
 
         user-action
         (recur
           board
           (user-action board block)
           score
-          next-tick)
+          next-tick
+          (- starting-tick-length (* 10 score)))
 
         :else
         (recur
           board
           block
           score
-          next-tick)))))
+          next-tick
+          (- starting-tick-length (* 10 score)))))))
 
