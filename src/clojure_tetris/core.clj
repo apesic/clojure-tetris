@@ -192,17 +192,13 @@
          score 0
          past-tick (System/currentTimeMillis)]
 
-    ;; 1. Draw the board
     (draw-all scr board block score)
 
-    ;; 2. Get user input
-
-    (let [action (key-mapping (s/get-key scr))
+    (let [user-action (key-mapping (s/get-key scr))
           current-tick (System/currentTimeMillis)
           next-tick (if (> (- current-tick past-tick) 600)
                       current-tick
                       past-tick)]
-      (if (> next-tick past-tick) (println "Down"))
       (cond
         (> next-tick past-tick)
         (let [[new-board new-block] (down-or-merge board block)]
@@ -211,10 +207,11 @@
            new-block
            score
            next-tick))
-        action
+
+        user-action
         (recur
           board
-          (action board block)
+          (user-action board block)
           score
           next-tick)
 
@@ -223,9 +220,5 @@
           board
           block
           score
-          next-tick)))
-
-    ;; 3. Process input, create new board
-    ;; 4. Recur with new board
-    ))
+          next-tick)))))
 
