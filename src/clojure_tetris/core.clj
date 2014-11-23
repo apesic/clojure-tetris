@@ -136,7 +136,7 @@
                1 "#"})
 
 (defn clear-screen  [screen]
-  (let [blank  (apply str  (repeat screen-width \space))]
+  (let [blank  (clojure.string/join (repeat screen-width \space))]
     (doseq  [row  (range screen-height)]
       (s/put-string screen 0 row blank))))
 
@@ -158,15 +158,11 @@
           value (get char-map (get board cell))]
       (s/put-string screen x y value))))
 
-;; TODO: Refactor to take advantage of map-matrix function
 (defn draw-block
   [screen block]
-  (let [[x y] (:xy block)
-        shape (:shape block)]
-    (doseq [row (range (count shape))]
-      (doseq [cell (range (count (get shape row)))]
-        (let [value (get char-map (get-in shape [row cell]))]
-          (s/put-string screen (+ x cell) (+ y row) value))))))
+  (let [coords (block-coords block)]
+    (doseq [[x y] coords]
+      (s/put-string screen x y (get char-map 1)))))
 
 (defn draw-game-over
   [screen score]
