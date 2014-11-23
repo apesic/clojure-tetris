@@ -23,6 +23,20 @@
     (recur (assoc board (xy->position [x y]) 1) (rest block-coords))
     board))
 
+(defn clear-filled-lines
+  [board]
+  (let [cleared-board ((comp
+                        (partial vec)
+                        (partial apply concat)
+                        (partial filter #(some #{0} %1))
+                        (partial partition COLS))
+                       board)
+        lines-cleared (/ (- (count board) (count cleared-board)) COLS)
+        new-board (into
+                    (vec (take (* COLS lines-cleared) (repeat 0)))
+                    cleared-board)]
+    [new-board lines-cleared]))
+
 ;; BLOCKS
 (def square-block [[1 1]
                    [1 1]])
@@ -201,11 +215,12 @@
                       past-tick)]
       (cond
         (> next-tick past-tick)
-        (let [[new-board new-block] (down-or-merge board block)]
+        (let [[merged-board new-block] (down-or-merge board block)
+              [new-board new-score] (clear-filled-lines merged-board)]
          (recur
            new-board
            new-block
-           score
+           (+ new-score score)
            next-tick))
 
         user-action
