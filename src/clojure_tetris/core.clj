@@ -14,7 +14,6 @@
 (defn xy->position [[x y]]
   (+ x (* y COLS)))
 
-
 (defn blank-board []
   (vec (take (* COLS ROWS) (repeat 0))))
 
@@ -52,7 +51,6 @@
 
 (defn get-block []
   {:shape (rand-nth blocks), :xy [5 0]})
-
 
 (defn map-matrix
   [f matrix]
@@ -103,7 +101,7 @@
       block
       rotated)))
 
-(defn down-or-anchor
+(defn down-or-merge
   [board block]
   (let [test-block (translate 0 1 board block)]
     (if (= block test-block)
@@ -150,6 +148,15 @@
         (let [value (get char-map (get-in shape [row cell]))]
           (s/put-string screen (+ x cell) (+ y row) value))))))
 
+(defn draw-all
+  [scr board block score]
+  (clear-screen scr)
+  (draw-border scr)
+  (draw-score scr score)
+  (draw-board scr board)
+  (draw-block scr block)
+  (s/redraw scr))
+
 ;; INPUT
 (defn key-mapping [input]
   (cond
@@ -186,12 +193,7 @@
          past-tick (System/currentTimeMillis)]
 
     ;; 1. Draw the board
-    (clear-screen scr)
-    (draw-border scr)
-    (draw-score scr score)
-    (draw-board scr board)
-    (draw-block scr block)
-    (s/redraw scr)
+    (draw-all scr board block score)
 
     ;; 2. Get user input
 
@@ -203,7 +205,7 @@
       (if (> next-tick past-tick) (println "Down"))
       (cond
         (> next-tick past-tick)
-        (let [[new-board new-block] (down-or-anchor board block)]
+        (let [[new-board new-block] (down-or-merge board block)]
          (recur
            new-board
            new-block
