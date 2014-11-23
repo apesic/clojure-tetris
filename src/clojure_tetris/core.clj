@@ -122,6 +122,12 @@
       [(merge-block board (block-coords block)) (get-block)]
       [board test-block])))
 
+(defn game-over?
+  [board block]
+  (and
+    (collides? board block)
+    (zero? (get (:xy block) 1))))
+
 ;; SCREEN
 (def screen-width (+ COLS 8))
 (def screen-height ROWS)
@@ -162,6 +168,13 @@
         (let [value (get char-map (get-in shape [row cell]))]
           (s/put-string screen (+ x cell) (+ y row) value))))))
 
+(defn draw-game-over
+  [screen score]
+  (clear-screen screen)
+  (s/put-string screen 4 4 "GAME OVER")
+  (s/put-string screen 4 6 (str "SCORE: " score))
+  (s/redraw screen))
+
 (defn draw-all
   [scr board block score]
   (clear-screen scr)
@@ -189,15 +202,13 @@
     :else
     nil))
 
+
 ;; TODO:
-;; - Detect full lines
-;; - Clear lines
-;; - Game over?
-;; - Score
 ;; - Increasing speed
 
 (defn -main
   [& args]
+
   (s/start scr)
 
   ;; Game Loop:
@@ -222,6 +233,9 @@
            new-block
            (+ new-score score)
            next-tick))
+
+	(game-over? board block)
+	(draw-game-over scr score)
 
         user-action
         (recur
