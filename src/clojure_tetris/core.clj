@@ -1,6 +1,6 @@
 (ns clojure-tetris.core
   (:require [lanterna.screen :as s])
-  (:use clojure-tetris.tetris)
+  (:require [ clojure-tetris.tetris :as t])
   (:gen-class))
 
 ;; TODO:
@@ -12,20 +12,20 @@
 ;; - Redo gui with OpenGL
 
 ;; UI Drawing
-(def screen-width (+ COLS 8))
-(def screen-height ROWS)
+(def screen-width (+ t/COLS 8))
+(def screen-height t/ROWS)
 (def scr (s/get-screen :swing {:cols screen-width :rows screen-height}))
-(def char-map {0 (str \space)
-               1 "#"})
+(def char-map {0 (str " "), 1 "#"})
+(def starting-tick-length 600)
 
-(defn clear-screen  [screen]
-  (let [blank  (clojure.string/join (repeat screen-width \space))]
-    (doseq  [row  (range screen-height)]
+(defn clear-screen [screen]
+  (let [blank (apply str (repeat screen-width \space))]
+    (doseq [row (range screen-height)]
       (s/put-string screen 0 row blank))))
 
 (defn draw-border [screen]
   (doseq [row (range screen-height)]
-    (s/put-string screen COLS row "|")))
+    (s/put-string screen t/COLS row "|")))
 
 (defn draw-score
   ([screen]
@@ -37,13 +37,13 @@
 (defn draw-board
   [screen board]
   (doseq [cell (range (count board))]
-    (let [[x y] (position->xy cell)
+    (let [[x y] (t/position->xy cell)
           value (get char-map (get board cell))]
       (s/put-string screen x y value))))
 
 (defn draw-block
   [screen block]
-  (let [coords (block-coords block)]
+  (let [coords (t/block-coords block)]
     (doseq [[x y] coords]
       (s/put-string screen x y (get char-map 1)))))
 
@@ -55,33 +55,22 @@
   (s/redraw screen))
 
 (defn draw-all
-  [scr board block score]
-  (clear-screen scr)
-  (draw-border scr)
-  (draw-score scr score)
-  (draw-board scr board)
-  (draw-block scr block)
-  (s/redraw scr))
+  [screen board block score]
+  (clear-screen screen)
+  (draw-border screen)
+  (draw-score screen score)
+  (draw-board screen board)
+  (draw-block screen block)
+  (s/redraw screen))
 
 ;; INPUT
 (defn key-mapping [input]
-  (cond
-    (= input :left)
-    (partial translate -1 0)
-
-    (= input :right)
-    (partial translate 1 0)
-
-    (= input :down)
-    (partial translate 0 1)
-
-    (= input :up)
-    rotate
-
-    :else
+  (case input
+    :left (partial t/translate -1 0)
+    :right (partial t/translate 1 0)
+    :down (partial t/translate 0 1)
+    :up t/rotate
     nil))
-
-(def starting-tick-length 600)
 
 (defn -main
   [& args]
@@ -89,8 +78,8 @@
   (s/start scr)
 
   ;; Game Loop:
-  (loop [board (blank-board)
-         block (get-block)
+  (loop [board (t/blank-board)
+         block (t/get-block)
          score 0
          past-tick (System/currentTimeMillis)
          tick-length starting-tick-length]
@@ -104,8 +93,8 @@
                       past-tick)]
       (cond
         (> next-tick past-tick)
-        (let [[merged-board new-block] (down-or-merge board block)
-              [new-board new-score] (clear-filled-lines merged-board)]
+        (let [[merged-board new-block] (t/down-or-merge board block)
+              [new-board new-score] (t/clear-filled-lines merged-board)]
          (recur
            new-board
            new-block
@@ -113,7 +102,7 @@
            next-tick
            (- starting-tick-length (* 10 score))))
 
-        (game-over? board block)
+        (t/game-over? board block)
         (draw-game-over scr score)
 
         user-action
