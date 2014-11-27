@@ -13,7 +13,7 @@
   (+ x (* y COLS)))
 
 (defn blank-board []
-  (vec (take (* COLS ROWS) (repeat 0))))
+  (vec (repeat (* COLS ROWS) 0)))
 
 (defn merge-block
   [board block-coords]
@@ -26,12 +26,12 @@
   (let [cleared-board ((comp
                         (partial vec)
                         (partial apply concat)
-                        (partial filter #(some #{0} %1))
+                        (partial filter #(some #{0} %))
                         (partial partition COLS))
                        board)
         lines-cleared (/ (- (count board) (count cleared-board)) COLS)
         new-board (into
-                    (vec (take (* COLS lines-cleared) (repeat 0)))
+                    (vec (repeat (* COLS lines-cleared) 0))
                     cleared-board)]
     [new-board lines-cleared]))
 
@@ -66,36 +66,32 @@
 
 (defn map-matrix
   [f matrix]
-  (vec (map-indexed  (fn [y row]
-    (vec (map-indexed  (fn [x cell] (f cell x y)) row)))
+  (vec (map-indexed
+         (fn [y row]
+           (vec (map-indexed
+                  (fn [x cell] (f cell x y))
+                  row)))
       matrix)))
 
 (defn block-coords [block]
   "Return a list of coordinates for each filled cell of block, e.g. ((1 3) (2 3) (2 4) (2 5))"
   (let [matrix (:shape block)
         [x y] (:xy block)
-        coord-matrix (map-matrix (fn [cell cell-x cell-y]
-                       (vector (* cell (+ cell-x x)) (* cell (+ cell-y y)))) matrix)]
-        (filter #(not= '(0 0) %1) (partition 2 (flatten coord-matrix)))))
+        coord-matrix (map-matrix
+                       (fn [cell cell-x cell-y]
+                       [(* cell (+ cell-x x)) (* cell (+ cell-y y))]) matrix)]
+        (filter #(not= '(0 0) %) (partition 2 (flatten coord-matrix)))))
 
-;; TODO: Refactor to use a single every?
 (defn collides?
   [board block]
   (let [block-coords (block-coords block)]
-    (not
-      (and
-        (every?
-          (fn [[x y]]
-            (< y ROWS))
-          block-coords)
-        (every?
-          (fn [[x y]]
-            (and (>= x 0) (< x COLS)))
-          block-coords)
-        (every?
-          (fn [[x y]]
-            (zero? (get board (xy->position [x y]))))
-          block-coords)))))
+    (or (some (fn [[x y]] (> y ROWS))
+              block-coords)
+        (some (fn [[x y]] (or (< x 0) (>= x COLS)))
+              block-coords)
+        (some (fn [[x y]] (or (nil? (get board (xy->position [x y])))
+                              (not (zero? (get board (xy->position [x y]))))))
+              block-coords))))
 
 (defn translate
   [dx dy board block]
@@ -125,3 +121,4 @@
   (and
     (collides? board block)
     (zero? (get (:xy block) 1))))
+
